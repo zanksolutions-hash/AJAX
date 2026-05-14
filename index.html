@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Configurateur Ajax Systems</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0e0f11;
+  --surface: #16181c;
+  --surface2: #1e2126;
+  --border: #2a2d35;
+  --border2: #363a45;
+  --accent: #e8ff47;
+  --accent2: #47ffd4;
+  --text: #f0f2f5;
+  --muted: #6b7280;
+  --muted2: #9ca3af;
+  --red: #ff4757;
+  --radius: 10px;
+  --font-head: 'Syne', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-mono);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+.bg-grid {
+  position: fixed; inset: 0; z-index: 0;
+  background-image:
+    linear-gradient(rgba(232,255,71,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(232,255,71,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+}
+
+.app {
+  position: relative; z-index: 1;
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+}
+
+/* HEADER */
+.header {
+  display: flex; align-items: center; gap: 14px;
+  margin-bottom: 2.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border);
+}
+.header-logo {
+  width: 42px; height: 42px;
+  background: var(--accent);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+.header-title {
+  font-family: var(--font-head);
+  font-size: 20px; font-weight: 800;
+  letter-spacing: -0.5px;
+  color: var(--text);
+}
+.header-sub {
+  font-size: 11px; color: var(--muted);
+  margin-top: 2px; letter-spacing: .04em;
+}
+
+/* PROGRESS */
+.progress-bar {
+  display: flex; gap: 4px; margin-bottom: 2rem;
+}
+.prog-seg {
+  flex: 1; height: 3px; border-radius: 99px;
+  background: var(--border2);
+  transition: background .3s;
+}
+.prog-seg.done { background: var(--accent); }
+.prog-seg.active { background: var(--accent2); }
+
+.step-label {
+  font-size: 11px; color: var(--muted); margin-bottom: 1.5rem;
+  letter-spacing: .06em; text-transform: uppercase;
+}
+.step-label span { color: var(--accent2); }
+
+/* QUESTION */
+.question-block {
+  animation: fadeUp .25s ease both;
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.q-number {
+  font-size: 11px; color: var(--accent); letter-spacing: .1em;
+  text-transform: uppercase; margin-bottom: 8px;
+}
+.q-title {
+  font-family: var(--font-head);
+  font-size: 22px; font-weight: 700;
+  line-height: 1.25; margin-bottom: 6px;
+  color: var(--text);
+}
+.q-hint {
+  font-size: 12px; color: var(--muted2);
+  margin-bottom: 1.5rem; line-height: 1.6;
+}
+
+/* OPTIONS */
+.options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 2rem; }
+
+.option {
+  display: flex; align-items: flex-start; gap: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+  text-align: left;
+  width: 100%;
+}
+.option:hover { border-color: var(--border2); background: var(--surface2); }
+.option.selected {
+  border-color: var(--accent2);
+  background: rgba(71,255,212,0.06);
+}
+.option.selected .opt-dot { background: var(--accent2); border-color: var(--accent2); }
+.opt-dot {
+  width: 18px; height: 18px; min-width: 18px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border2);
+  margin-top: 1px;
+  transition: background .15s, border-color .15s;
+}
+.opt-body { flex: 1; }
+.opt-label { font-size: 14px; font-weight: 500; color: var(--text); line-height: 1.3; }
+.opt-sub { font-size: 12px; color: var(--muted); margin-top: 3px; line-height: 1.4; }
+.opt-badge {
+  font-size: 10px; letter-spacing: .05em; padding: 2px 8px;
+  border-radius: 99px; font-weight: 500; margin-top: 6px; display: inline-block;
+}
+.badge-green { background: rgba(71,255,212,0.12); color: var(--accent2); border: 1px solid rgba(71,255,212,0.25); }
+.badge-yellow { background: rgba(232,255,71,0.12); color: var(--accent); border: 1px solid rgba(232,255,71,0.25); }
+.badge-red { background: rgba(255,71,87,0.12); color: var(--red); border: 1px solid rgba(255,71,87,0.25); }
+
+/* SUB-QUESTION */
+.subq {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+  margin-top: -4px;
+  margin-bottom: 1rem;
+  animation: fadeUp .2s ease both;
+}
+.subq-title { font-size: 13px; color: var(--muted2); margin-bottom: 10px; }
+.subq-opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.subq-btn {
+  font-family: var(--font-mono);
+  font-size: 12px; padding: 7px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--border2);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color .12s, background .12s;
+}
+.subq-btn:hover { border-color: var(--accent2); }
+.subq-btn.active { border-color: var(--accent2); background: rgba(71,255,212,0.08); color: var(--accent2); }
+
+/* MULTI-SELECT hint */
+.multi-hint { font-size: 11px; color: var(--muted); margin-bottom: 1rem; }
+
+/* NAV */
+.nav { display: flex; gap: 10px; }
+.btn-next {
+  flex: 1; padding: 14px;
+  background: var(--accent);
+  color: #0e0f11;
+  border: none; border-radius: var(--radius);
+  font-family: var(--font-head);
+  font-size: 15px; font-weight: 700;
+  cursor: pointer;
+  transition: opacity .15s, transform .1s;
+  letter-spacing: .01em;
+}
+.btn-next:hover { opacity: .9; transform: translateY(-1px); }
+.btn-next:disabled { opacity: .35; cursor: not-allowed; transform: none; }
+.btn-back {
+  padding: 14px 18px;
+  background: none;
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  color: var(--muted2);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color .12s, color .12s;
+}
+.btn-back:hover { border-color: var(--text); color: var(--text); }
+
+/* RESULT */
+.result-section { animation: fadeUp .3s ease both; }
+.result-header {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+.result-icon { font-size: 28px; }
+.result-title {
+  font-family: var(--font-head);
+  font-size: 24px; font-weight: 800;
+}
+.result-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+.result-cat { margin-bottom: 1.5rem; }
+.cat-title {
+  font-size: 10px; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--accent); margin-bottom: 8px;
+  display: flex; align-items: center; gap: 8px;
+}
+.cat-title::after { content:''; flex:1; height:1px; background:var(--border); }
+
+.item-row {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.item-row:last-child { border-bottom: none; }
+.item-qty {
+  font-size: 11px; font-weight: 500;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 5px;
+  padding: 3px 8px;
+  color: var(--accent2);
+  white-space: nowrap;
+  min-width: 36px; text-align: center;
+}
+.item-info { flex: 1; }
+.item-name { font-size: 13px; font-weight: 500; color: var(--text); }
+.item-desc { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.item-price { font-size: 12px; color: var(--accent); white-space: nowrap; }
+
+.total-bar {
+  display: flex; justify-content: space-between; align-items: center;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+  margin-top: 1.5rem;
+}
+.total-label { font-family: var(--font-head); font-size: 14px; font-weight: 700; }
+.total-amount { font-family: var(--font-head); font-size: 22px; font-weight: 800; color: var(--accent); }
+.total-sub { font-size: 10px; color: var(--muted); }
+
+.btn-restart {
+  width: 100%; margin-top: 1rem; padding: 13px;
+  background: none;
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  color: var(--muted2);
+  font-family: var(--font-mono);
+  font-size: 13px; cursor: pointer;
+  transition: border-color .12s, color .12s;
+}
+.btn-restart:hover { border-color: var(--text); color: var(--text); }
+
+.warn-box {
+  background: rgba(255,71,87,0.07);
+  border: 1px solid rgba(255,71,87,0.25);
+  border-radius: 8px; padding: 10px 14px;
+  font-size: 12px; color: #ff8a94;
+  margin-top: 8px; line-height: 1.5;
+}
+</style>
+</head>
+<body>
+<div class="bg-grid"></div>
+<div class="app">
+
+  <div class="header">
+    <div class="header-logo">🔐</div>
+    <div>
+      <div class="header-title">Configurateur Ajax Systems</div>
+      <div class="header-sub">Arbre de décision technique — gamme Jeweller sans fil</div>
+    </div>
+  </div>
+
+  <div id="main"></div>
+
+</div>
+
+<script>
+var step = 0;
+var answers = {};
+var inventory = [];
+
+var STEPS = [
+  {
+    id: 'modem_distance',
+    num: 'Q1', label: 'Connectivité de la centrale',
+    title: 'Où se situe la box / modem internet par rapport à l\'emplacement prévu de la centrale ?',
+    hint: 'La proximité du modem détermine si une connexion filaire RJ45 est possible, ce qui influe directement sur le modèle de Hub à choisir.',
+    type: 'single',
+    options: [
+      { value: 'proche', label: 'Proche — liaison RJ45 possible', sub: 'Le Hub peut être branché directement en Ethernet', badge: null },
+      { value: 'loin', label: 'Loin — Wi-Fi obligatoire', sub: 'Pas de câble réseau possible jusqu\'à la centrale', badge: null }
+    ],
+    subq: {
+      proche: {
+        id: 'batterie',
+        title: 'Une batterie de secours interne est-elle souhaitée ?',
+        options: [
+          { value: 'oui', label: 'Oui — alimentation de secours intégrée' },
+          { value: 'non', label: 'Non — alimentation secteur standard' }
+        ]
+      }
+    }
+  },
+  {
+    id: 'ouverture',
+    num: 'Q2', label: 'Détecteurs d\'ouverture',
+    title: 'Quel type de détecteur d\'ouverture faut-il ?',
+    hint: 'Sélectionnez autant que nécessaire selon les points à protéger (portes, fenêtres, volets...).',
+    type: 'multi',
+    options: [
+      { value: 'doorprotect', label: 'DoorProtect Jeweller', sub: 'Simple contact magnétique — portes et fenêtres standard', badge: 'badge-green' },
+      { value: 'doorprotect_plus', label: 'DoorProtect Plus Jeweller', sub: 'Contact + détecteur de choc et inclinaison — volets, portails, coffres', badge: 'badge-yellow' }
+    ]
+  },
+  {
+    id: 'mouvement',
+    num: 'Q3', label: 'Détecteurs de mouvement',
+    title: 'Quels détecteurs de mouvement sont nécessaires ?',
+    hint: 'Tenez compte de la présence d\'animaux et du besoin de levée de doute visuelle. Sélection multiple possible.',
+    type: 'multi',
+    options: [
+      { value: 'motionprotect', label: 'MotionProtect Jeweller', sub: 'PIR intérieur standard — immunité animaux ≤ 20 kg, portée 12 m', badge: 'badge-green' },
+      { value: 'motionprotect_plus', label: 'MotionProtect Plus Jeweller', sub: 'PIR + micro-ondes 24 GHz — zéro fausse alarme, grand chien > 20 kg, vibrations', badge: 'badge-yellow' },
+      { value: 'motioncam', label: 'MotionCam Jeweller', sub: 'PIR + photo sur alarme — levée de doute en 9 s, HDR, animaux ≤ 20 kg', badge: 'badge-green' },
+      { value: 'motioncam_phod', label: 'MotionCam PhOD Jeweller', sub: 'PIR + photo à la demande + par scénario — vérification sans alarme', badge: 'badge-yellow' },
+      { value: 'motioncam_hd', label: 'Superior MotionCam HD PhOD Jeweller', sub: 'Photo haute définition couleur — image nette quelle que soit la luminosité', badge: 'badge-yellow' },
+      { value: 'combiprotect', label: 'CombiProtect Jeweller', sub: 'PIR + bris de glace en un seul boîtier — idéal baies vitrées', badge: 'badge-green' },
+      { value: 'outdoor', label: 'MotionProtect Outdoor Jeweller', sub: 'Double PIR extérieur — anti-masquage 24h/24, jardin, périmètre large', badge: 'badge-green' },
+      { value: 'curtain', label: 'Curtain Outdoor Jeweller', sub: 'Rideau de détection périmètre — fenêtres étroites, portes extérieures', badge: 'badge-green' },
+      { value: 'curtaincam', label: 'CurtainCam Outdoor HighMount PhOD', sub: 'Rideau extérieur + photo à la demande depuis point haut', badge: 'badge-yellow' }
+    ]
+  },
+  {
+    id: 'sirenes',
+    num: 'Q4', label: 'Sirènes',
+    title: 'Quelles sirènes faut-il installer ?',
+    hint: 'Sélection multiple possible. La sirène extérieure est fortement recommandée pour la dissuasion visuelle.',
+    type: 'multi',
+    options: [
+      { value: 'homesiren', label: 'HomeSiren Jeweller', sub: 'Sirène intérieure sans fil — discrète, LED, batterie de secours intégrée', badge: 'badge-green' },
+      { value: 'streetsiren', label: 'StreetSiren Jeweller', sub: 'Sirène extérieure sans fil — 113 dB, LED, résistante aux intempéries', badge: 'badge-green' },
+      { value: 'doubledeck', label: 'StreetSiren DoubleDeck Jeweller', sub: 'Sirène extérieure haut de gamme — logo lumineux personnalisable, flash', badge: 'badge-yellow' },
+      { value: 'nfa2p', label: 'Superior NFA2P Siren', sub: 'Sirène certifiée NFA2P — exigée pour télésurveillance professionnelle', badge: 'badge-red' }
+    ]
+  },
+  {
+    id: 'claviers',
+    num: 'Q5', label: 'Claviers & contrôle d\'accès',
+    title: 'Comment le client va-t-il armer / désarmer le système ?',
+    hint: 'Sélection multiple possible. L\'application mobile est toujours incluse avec le Hub.',
+    type: 'multi',
+    options: [
+      { value: 'spacecontrol', label: 'SpaceControl Jeweller', sub: 'Télécommande 4 boutons — armement, désarmement, nuit, panique', badge: 'badge-green' },
+      { value: 'keypad', label: 'KeyPad Jeweller', sub: 'Clavier à touches physiques — codes PIN uniquement', badge: 'badge-green' },
+      { value: 'keypad_plus', label: 'KeyPad Plus Jeweller', sub: 'Clavier tactile + lecteur badge RFID (Pass / Tag)', badge: 'badge-yellow' },
+      { value: 'keypad_outdoor', label: 'KeyPad Outdoor Jeweller', sub: 'Clavier extérieur IP65 — portail, garage, entrée extérieure', badge: 'badge-yellow' },
+      { value: 'button', label: 'Button Jeweller', sub: 'Bouton d\'alerte discret — panique, urgence médicale, incendie', badge: 'badge-red' },
+      { value: 'doorbell', label: 'DoorBell Ajax', sub: 'Sonnette vidéo connectée — interphone bidirectionnel, notification', badge: 'badge-yellow' }
+    ]
+  },
+  {
+    id: 'incendie',
+    num: 'Q6', label: 'Détection incendie',
+    title: 'Quels détecteurs incendie / CO sont nécessaires ?',
+    hint: 'Gamme FireProtect 2 RB uniquement — batteries remplaçables. Choisissez selon la pièce.',
+    type: 'multi',
+    options: [
+      { value: 'fp2_hs', label: 'FireProtect 2 RB (Heat/Smoke)', sub: 'Chaleur + fumée — séjour, couloir, chambre', badge: 'badge-green' },
+      { value: 'fp2_hco', label: 'FireProtect 2 RB (Heat/CO)', sub: 'Chaleur + monoxyde de carbone — garage attenant, local chaudière', badge: 'badge-yellow' },
+      { value: 'fp2_hsco', label: 'FireProtect 2 RB (Heat/Smoke/CO)', sub: 'Chaleur + fumée + CO — cuisine ouverte, chaufferie polyvalente', badge: 'badge-yellow' },
+      { value: 'fp2_h', label: 'FireProtect 2 RB (Heat)', sub: 'Chaleur seule — cuisine (évite fausses alarmes vapeur / cuisson)', badge: 'badge-green' },
+      { value: 'fp2_co', label: 'FireProtect 2 RB (CO)', sub: 'CO seul — garage, cave avec chaudière à gaz', badge: 'badge-yellow' }
+    ]
+  },
+  {
+    id: 'inondation',
+    num: 'Q7', label: 'Détection inondation',
+    title: 'Une protection contre les fuites d\'eau est-elle nécessaire ?',
+    hint: 'Le WaterStop coupe automatiquement l\'arrivée d\'eau sur alarme LeaksProtect.',
+    type: 'single',
+    options: [
+      { value: 'none', label: 'Non — pas de protection inondation', sub: '', badge: null },
+      { value: 'leaks', label: 'LeaksProtect Jeweller uniquement', sub: 'Détecteur de fuite au sol — alerte sur l\'application, batterie 5 ans', badge: 'badge-green' },
+      { value: 'leaks_stop', label: 'LeaksProtect + WaterStop Jeweller', sub: 'Détecteur + vanne motorisée ½" ou ¾" — coupure automatique de l\'eau', badge: 'badge-yellow' }
+    ]
+  },
+  {
+    id: 'telesurveillance',
+    num: 'Q8', label: 'Télésurveillance & levée de doute audio',
+    title: 'Le client souhait-il une télésurveillance avec levée de doute audio ?',
+    hint: 'Le SpeakerPhone permet à l\'opérateur d\'écouter et de parler sur site à distance en cas d\'alarme.',
+    type: 'single',
+    options: [
+      { value: 'none', label: 'Non — auto-surveillance via application mobile', sub: '', badge: null },
+      { value: 'photo', label: 'Oui — levée de doute photo uniquement', sub: 'Via MotionCam déjà sélectionné en Q3', badge: 'badge-green' },
+      { value: 'audio', label: 'Oui — levée de doute audio (SpeakerPhone)', sub: 'L\'opérateur peut écouter et parler sur site en temps réel', badge: 'badge-yellow' },
+      { value: 'both', label: 'Oui — photo + audio (solution complète)', sub: 'MotionCam + SpeakerPhone Jeweller', badge: 'badge-yellow' }
+    ]
+  }
+];
+
+var PRODUCTS = {
+  hub_bp:           { name: 'Hub BP Jeweller', desc: 'Centrale sans fil — batterie interne, 2 SIM LTE', price: 396 },
+  hub_2_4g:         { name: 'Hub 2 (4G) Jeweller', desc: 'Centrale sans fil — Ethernet + 2 SIM LTE', price: 520 },
+  hub_2_plus:       { name: 'Hub 2 Plus Jeweller', desc: 'Centrale sans fil — Wi-Fi + Ethernet + 2 SIM LTE', price: 593 },
+  doorprotect:      { name: 'DoorProtect Jeweller', desc: 'Détecteur d\'ouverture magnétique', price: 40 },
+  doorprotect_plus: { name: 'DoorProtect Plus Jeweller', desc: 'Ouverture + choc + inclinaison', price: 82 },
+  motionprotect:    { name: 'MotionProtect Jeweller', desc: 'PIR intérieur, immunité animaux ≤20 kg', price: 93 },
+  motionprotect_plus: { name: 'MotionProtect Plus Jeweller', desc: 'PIR + micro-ondes, zéro fausse alarme', price: 128 },
+  motioncam:        { name: 'MotionCam Jeweller', desc: 'PIR + photo sur alarme, HDR', price: 140 },
+  motioncam_phod:   { name: 'MotionCam PhOD Jeweller', desc: 'PIR + photo à la demande', price: 160 },
+  motioncam_hd:     { name: 'Superior MotionCam HD PhOD', desc: 'Photo haute définition couleur', price: 195 },
+  combiprotect:     { name: 'CombiProtect Jeweller', desc: 'PIR + bris de glace combiné', price: 129 },
+  outdoor:          { name: 'MotionProtect Outdoor Jeweller', desc: 'Double PIR extérieur, anti-masquage', price: 145 },
+  curtain:          { name: 'Curtain Outdoor Jeweller', desc: 'Rideau périmètre extérieur', price: 110 },
+  curtaincam:       { name: 'CurtainCam Outdoor HighMount PhOD', desc: 'Rideau ext. + photo à la demande', price: 175 },
+  homesiren:        { name: 'HomeSiren Jeweller', desc: 'Sirène intérieure sans fil', price: 85 },
+  streetsiren:      { name: 'StreetSiren Jeweller', desc: 'Sirène extérieure 113 dB', price: 130 },
+  doubledeck:       { name: 'StreetSiren DoubleDeck Jeweller', desc: 'Sirène extérieure haut de gamme', price: 165 },
+  nfa2p:            { name: 'Superior NFA2P Siren', desc: 'Sirène certifiée NFA2P', price: 210 },
+  spacecontrol:     { name: 'SpaceControl Jeweller', desc: 'Télécommande 4 boutons', price: 55 },
+  keypad:           { name: 'KeyPad Jeweller', desc: 'Clavier à codes PIN', price: 95 },
+  keypad_plus:      { name: 'KeyPad Plus Jeweller', desc: 'Clavier tactile + lecteur badge RFID', price: 130 },
+  keypad_outdoor:   { name: 'KeyPad Outdoor Jeweller', desc: 'Clavier extérieur IP65', price: 145 },
+  button:           { name: 'Button Jeweller', desc: 'Bouton d\'alerte panique / urgence', price: 50 },
+  doorbell:         { name: 'DoorBell Ajax', desc: 'Sonnette vidéo connectée', price: 120 },
+  fp2_hs:           { name: 'FireProtect 2 RB (Heat/Smoke)', desc: 'Chaleur + fumée', price: 75 },
+  fp2_hco:          { name: 'FireProtect 2 RB (Heat/CO)', desc: 'Chaleur + CO', price: 80 },
+  fp2_hsco:         { name: 'FireProtect 2 RB (Heat/Smoke/CO)', desc: 'Chaleur + fumée + CO', price: 90 },
+  fp2_h:            { name: 'FireProtect 2 RB (Heat)', desc: 'Chaleur seule', price: 65 },
+  fp2_co:           { name: 'FireProtect 2 RB (CO)', desc: 'CO seul', price: 65 },
+  leaks:            { name: 'LeaksProtect Jeweller', desc: 'Détecteur de fuite d\'eau', price: 40 },
+  waterstop:        { name: 'WaterStop Jeweller', desc: 'Vanne d\'arrêt motorisée', price: 120 },
+  speakerphone:     { name: 'SpeakerPhone Jeweller', desc: 'Levée de doute audio bidirectionnelle', price: 130 },
+  pass:             { name: 'Pass Jeweller', desc: 'Badge RFID pour KeyPad Plus', price: 20 },
+};
+
+function render() {
+  var el = document.getElementById('main');
+  if (step >= STEPS.length) { el.innerHTML = buildResult(); return; }
+  var s = STEPS[step];
+  var prog = STEPS.map(function(_, i) {
+    var cls = i < step ? 'done' : i === step ? 'active' : '';
+    return '<div class="prog-seg ' + cls + '"></div>';
+  }).join('');
+
+  var opts = s.options.map(function(o) {
+    var sel = isSelected(s.id, o.value);
+    var badge = o.badge ? '<span class="opt-badge ' + o.badge + '">' + badgeLabel(o.badge) + '</span>' : '';
+    return '<button class="option' + (sel ? ' selected' : '') + '" onclick="select(\'' + s.id + '\',\'' + o.value + '\',' + (s.type==='multi') + ')">' +
+      '<div class="opt-dot"></div>' +
+      '<div class="opt-body"><div class="opt-label">' + o.label + '</div>' +
+      (o.sub ? '<div class="opt-sub">' + o.sub + '</div>' : '') +
+      badge + '</div></button>';
+  }).join('');
+
+  var subqHtml = '';
+  if (s.subq) {
+    var modemAns = answers['modem_distance'];
+    if (modemAns === 'proche') {
+      var sq = s.subq.proche;
+      var sqOpts = sq.options.map(function(o) {
+        var a = answers[sq.id] === o.value;
+        return '<button class="subq-btn' + (a ? ' active' : '') + '" onclick="answers[\'' + sq.id + '\']=\'' + o.value + '\';render()">' + o.label + '</button>';
+      }).join('');
+      subqHtml = '<div class="subq"><div class="subq-title">' + sq.title + '</div><div class="subq-opts">' + sqOpts + '</div></div>';
+    }
+  }
+
+  var multiHint = s.type === 'multi' ? '<div class="multi-hint">Sélection multiple possible — cliquez sur toutes les options nécessaires</div>' : '';
+  var canNext = canProceed(s);
+
+  el.innerHTML =
+    '<div class="progress-bar">' + prog + '</div>' +
+    '<div class="step-label">Étape <span>' + (step+1) + ' / ' + STEPS.length + '</span></div>' +
+    '<div class="question-block">' +
+      '<div class="q-number">' + s.num + ' — ' + s.label + '</div>' +
+      '<div class="q-title">' + s.title + '</div>' +
+      (s.hint ? '<div class="q-hint">' + s.hint + '</div>' : '') +
+      multiHint +
+      '<div class="options">' + opts + '</div>' +
+      subqHtml +
+    '</div>' +
+    '<div class="nav">' +
+      (step > 0 ? '<button class="btn-back" onclick="goBack()">← Retour</button>' : '') +
+      '<button class="btn-next" onclick="nextStep()" ' + (canNext ? '' : 'disabled') + '>' +
+        (step === STEPS.length-1 ? 'Générer l\'inventaire →' : 'Suivant →') +
+      '</button>' +
+    '</div>';
+}
+
+function badgeLabel(b) {
+  if (b==='badge-green') return 'Standard';
+  if (b==='badge-yellow') return 'Avancé';
+  if (b==='badge-red') return 'Pro / Certifié';
+  return '';
+}
+
+function isSelected(id, val) {
+  var a = answers[id];
+  if (!a) return false;
+  if (Array.isArray(a)) return a.indexOf(val) >= 0;
+  return a === val;
+}
+
+function select(id, val, multi) {
+  if (multi) {
+    if (!answers[id]) answers[id] = [];
+    var idx = answers[id].indexOf(val);
+    if (idx >= 0) answers[id].splice(idx, 1);
+    else answers[id].push(val);
+  } else {
+    answers[id] = val;
+  }
+  render();
+}
+
+function canProceed(s) {
+  var a = answers[s.id];
+  if (!a || (Array.isArray(a) && a.length === 0)) return false;
+  if (s.subq && answers['modem_distance'] === 'proche' && !answers['batterie']) return false;
+  return true;
+}
+
+function nextStep() { step++; render(); }
+function goBack() { step--; render(); }
+
+function buildInventory() {
+  var items = [];
+  function add(key, qty) {
+    if (PRODUCTS[key]) items.push({ key: key, qty: qty || 1 });
+  }
+
+  // Q1 — Hub
+  var dist = answers['modem_distance'];
+  if (dist === 'proche') {
+    if (answers['batterie'] === 'oui') add('hub_bp');
+    else add('hub_2_4g');
+  } else {
+    if (answers['batterie'] === 'oui') add('hub_bp');
+    else add('hub_2_plus');
+  }
+
+  // Q2 — Ouverture
+  var ouv = answers['ouverture'] || [];
+  if (ouv.indexOf('doorprotect') >= 0) add('doorprotect');
+  if (ouv.indexOf('doorprotect_plus') >= 0) add('doorprotect_plus');
+
+  // Q3 — Mouvement
+  var mouv = answers['mouvement'] || [];
+  mouv.forEach(function(v) { add(v); });
+
+  // Q4 — Sirènes
+  var sir = answers['sirenes'] || [];
+  sir.forEach(function(v) { add(v); });
+
+  // Q5 — Claviers
+  var clav = answers['claviers'] || [];
+  clav.forEach(function(v) { add(v); });
+  if (clav.indexOf('keypad_plus') >= 0) add('pass');
+
+  // Q6 — Incendie
+  var inc = answers['incendie'] || [];
+  inc.forEach(function(v) { add(v); });
+
+  // Q7 — Inondation
+  var inond = answers['inondation'];
+  if (inond === 'leaks') add('leaks');
+  if (inond === 'leaks_stop') { add('leaks'); add('waterstop'); }
+
+  // Q8 — Télésurveillance
+  var tel = answers['telesurveillance'];
+  if (tel === 'audio' || tel === 'both') add('speakerphone');
+
+  return items;
+}
+
+function buildResult() {
+  var items = buildInventory();
+
+  var cats = [
+    { label: 'Centrale', keys: ['hub_bp','hub_2_4g','hub_2_plus'] },
+    { label: 'Détecteurs d\'ouverture', keys: ['doorprotect','doorprotect_plus'] },
+    { label: 'Détecteurs de mouvement', keys: ['motionprotect','motionprotect_plus','motioncam','motioncam_phod','motioncam_hd','combiprotect','outdoor','curtain','curtaincam'] },
+    { label: 'Sirènes', keys: ['homesiren','streetsiren','doubledeck','nfa2p'] },
+    { label: 'Claviers & contrôle', keys: ['spacecontrol','keypad','keypad_plus','keypad_outdoor','button','doorbell','pass'] },
+    { label: 'Détection incendie', keys: ['fp2_hs','fp2_hco','fp2_hsco','fp2_h','fp2_co'] },
+    { label: 'Protection inondation', keys: ['leaks','waterstop'] },
+    { label: 'Levée de doute audio', keys: ['speakerphone'] },
+  ];
+
+  var total = 0;
+  var html = '';
+
+  cats.forEach(function(cat) {
+    var catItems = items.filter(function(i) { return cat.keys.indexOf(i.key) >= 0; });
+    if (!catItems.length) return;
+    html += '<div class="result-cat"><div class="cat-title">' + cat.label + '</div>';
+    catItems.forEach(function(i) {
+      var p = PRODUCTS[i.key];
+      var lineTotal = p.price * i.qty;
+      total += lineTotal;
+      html += '<div class="item-row">' +
+        '<div class="item-qty">×' + i.qty + '</div>' +
+        '<div class="item-info"><div class="item-name">' + p.name + '</div><div class="item-desc">' + p.desc + '</div></div>' +
+        '<div class="item-price">' + lineTotal.toLocaleString('fr-FR') + ' €</div>' +
+      '</div>';
+    });
+    html += '</div>';
+  });
+
+  var warnAnimal = answers['mouvement'] && answers['mouvement'].indexOf('motionprotect') >= 0;
+
+  return '<div class="result-section">' +
+    '<div class="result-header">' +
+      '<div class="result-icon">📋</div>' +
+      '<div><div class="result-title">Inventaire matériel Ajax</div>' +
+      '<div class="result-sub">Gamme Jeweller sans fil — prix indicatifs HTVA</div></div>' +
+    '</div>' +
+    html +
+    '<div class="total-bar">' +
+      '<div><div class="total-label">Total estimé</div><div class="total-sub">HTVA — hors installation</div></div>' +
+      '<div class="total-amount">' + total.toLocaleString('fr-FR') + ' €</div>' +
+    '</div>' +
+    (warnAnimal ? '<div class="warn-box">⚠️ MotionProtect standard sélectionné : vérifiez le poids des animaux. Si > 20 kg, remplacer par MotionProtect Plus.</div>' : '') +
+    '<button class="btn-restart" onclick="restart()">↺ Nouvelle configuration</button>' +
+  '</div>';
+}
+
+function restart() {
+  step = 0; answers = {};
+  render();
+}
+
+render();
+</script>
+</body>
+</html>
